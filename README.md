@@ -14,17 +14,9 @@ A FastAPI application that uses AWS Bedrock to generate field mappings based on 
 ```bash
 pip install -r requirements.txt
 ```
-
-2. Configure AWS credentials:
-- Ensure your AWS credentials are configured in `~/.aws/credentials` or set the appropriate environment variables.
-- Set the AWS region:
+2. Run the application:
 ```bash
-export AWS_REGION=us-east-1
-```
-
-3. Run the application:
-```bash
-uvicorn app.main:app --reload
+python main.py
 ```
 
 ## Running Tests
@@ -62,26 +54,77 @@ The response will be:
 
 1. Build the Docker image:
 ```bash
-docker build -t field-mapping-service .
-```
-
-2. Run the container:
-```bash
-docker run -p 8000:8000 field-mapping-service
-```
-
-## AWS Lambda Deployment
-
-1. Build the Docker image for Lambda:
-```bash
-docker build -t field-mapping-lambda .
+docker build -t llm-bedrock:latest .
 ```
 
 2. Tag and push the image to Amazon ECR:
 ```bash
-aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com
-docker tag field-mapping-lambda:latest YOUR_ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com/field-mapping-lambda:latest
-docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com/field-mapping-lambda:latest
+aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 666678444459.dkr.ecr.eu-west-2.amazonaws.com
+
+
+docker tag llm-bedrock:latest 666678444459.dkr.ecr.eu-west-2.amazonaws.com/llm-bedrock:latest
+
+docker push 666678444459.dkr.ecr.eu-west-2.amazonaws.com/llm-bedrock:latest
 ```
 
-3. Create a Lambda function using the container image and configure the function URL for HTTP access. 
+3. Create a Lambda function using the container image and configure the function URL for HTTP access.
+
+## Lambda Deployment and URL Configuration
+
+Follow these steps to deploy the Lambda function using the container image and configure the function URL for HTTP access.
+
+1. **Create a new Lambda function:**
+   - Go to the AWS Lambda console.
+   - Click on "Create function".
+   - Select "Container image" as the function type.
+   - Click on "Choose container image" (see `choose_none.png`).
+
+   ![Choose None](images/create_lambda.png)
+
+2. **Configure the container image:**
+   - In the "Container image" section, select "bedrock registry" then select the container image you pushed to Amazon ECR.
+   - Click on "Create function" (see `create_lambda.png`).
+
+   ![Create Lambda](images/select_container.png)
+
+3. **Configure the function URL:**
+   - After the function is created, go to the "Configuration" tab.
+   - Select "Function URL" from the left-hand menu.
+   - Click on "Create function URL" (see `create_url.png`).
+
+   ![Create URL](images/create_url.png)
+
+4. **Configure cross-origin resource sharing (CORS):**
+   - In the "Function URL" section, configure CORS settings to allow cross-origin requests if needed (see `select_cross_origin.png`).
+
+   ![Select Cross Origin](images/select_cross_origin.png)
+
+5. **Get the function URL:**
+   - Once the function URL is created, you will see the URL in the "Function URL" section.
+   - Copy the URL for later use (see `get_url.png`).
+
+   ![Get URL](images/get_url.png)
+
+
+
+Your Lambda function is now deployed and configured with a function URL for HTTP access.
+6. **Select a policy from the Permissions tab:**
+   - Go to the "Configuration" tab of your Lambda function.
+   - Select "Permissions" from the left-hand menu.
+   - Click on "Add permissions" and then "Attach policies" (see `select_policy.png`).
+
+   ![Select Policy](images/select_policy.png)
+
+
+6. **Add a policy to the Lambda function:**
+   - Go to the "Configuration" tab of your Lambda function.
+   - Select "Permissions" from the left-hand menu.
+   - Click on "Add permissions" and then "Attach policies" (see `select_attach_policy.png`).
+
+   ![Select Attach Policy](images/select_attach_policy.png)
+
+7. **Attach the Bedrock access policy:**
+   - In the "Attach policies" section, search for the policy that grants access to Bedrock services.
+   - Select the appropriate policy (e.g., `BedrockAccessPolicy`) and click "Attach policy" (see `select_bedrock_access.png`).
+
+   ![Select Bedrock Access](images/select_bedrock_access.png)
