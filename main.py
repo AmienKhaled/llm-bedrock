@@ -10,8 +10,6 @@ from langchain_aws import BedrockLLM, ChatBedrock
 from mangum import Mangum
 from pydantic import BaseModel
 
-from config import AWS_CONFIG, BEDROCK_CONFIG
-
 # Load environment variables from .env file
 load_dotenv()
 
